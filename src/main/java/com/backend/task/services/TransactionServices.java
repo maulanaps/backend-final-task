@@ -6,10 +6,12 @@ import com.backend.task.models.Transaction;
 import com.backend.task.models.User;
 import com.backend.task.repo.TransactionRepo;
 import com.backend.task.repo.UserRepo;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Service
 public class TransactionServices {
@@ -19,17 +21,17 @@ public class TransactionServices {
     @Autowired
     UserRepo userRepo;
 
-    public Boolean transactionLimitOk(String username, Integer trfAmount){
+    public Boolean transactionLimitOk(String username, Integer trfAmount) {
         User user = userRepo.findByUsername(username);
 
         return trfAmount <= user.getTransactionLimit();
     }
 
-    public Boolean minTrfAmountOk(Integer amount){
+    public Boolean minTrfAmountOk(Integer amount) {
         return amount >= Constants.MIN_TRANSACTION;
     }
 
-    public Boolean balanceIsSufficient(String username, Integer amount){
+    public Boolean balanceIsSufficient(String username, Integer amount) {
         User user = userRepo.findByUsername(username);
 
         Integer amountAfterTax = Math.round(amount * (1 + Constants.TAX));
@@ -39,18 +41,18 @@ public class TransactionServices {
         return balanceAfter >= Constants.MIN_BALANCE;
     }
 
-    public Boolean balanceIsOverflow(String username, Integer amount){
+    public Boolean balanceIsOverflow(String username, Integer amount) {
         User user = userRepo.findByUsername(username);
         int balanceAfter = user.getBalance() + amount;
 
         return balanceAfter > Constants.MAX_BALANCE;
     }
 
-    public Boolean maxTopupOk(Integer amount){
+    public Boolean maxTopupOk(Integer amount) {
         return amount <= Constants.MAX_TOPUP;
     }
 
-    public TransactionTrfResponseDto executeTransfer(String originUsername, String destinationUsername, Integer amount){
+    public TransactionTrfResponseDto executeTransfer(String originUsername, String destinationUsername, Integer amount) {
 
         Integer amountAfterTax = Math.round(amount * (1 + Constants.TAX));
 
@@ -61,7 +63,8 @@ public class TransactionServices {
 
         // destination user
         User destinationUser = userRepo.findByUsername(destinationUsername);
-        Integer destinationUserBalanceBefore = destinationUser.getBalance();;
+        Integer destinationUserBalanceBefore = destinationUser.getBalance();
+        ;
         Integer destinationUserBalance = destinationUserBalanceBefore + amount;
 
         // update balance of 2 user
@@ -71,39 +74,45 @@ public class TransactionServices {
         LocalDate localDate = LocalDate.now();
 
         // save 2 users updated balances
-        userRepo.save(originUser);
-        userRepo.save(destinationUser);
+//        userRepo.save(originUser);
+//        userRepo.save(destinationUser);
 
 
-        // update transaction db (origin user)
-        Transaction transactionOrigin = new Transaction(originUser.getId(), "SEND", originUsername
-                , destinationUsername, amount, originUserBalanceBefore, originUserBalance, "SETTLED", localDate);
-        transactionRepo.save(transactionOrigin);
+        // create transaction (origin user)
+        Transaction transactionOrigin = new Transaction("SEND", originUsername
+                , destinationUsername, amount, originUserBalanceBefore, originUserBalance
+                , "SETTLED", localDate, originUser);
 
-        // update transaction db (destination user)
-        Transaction transactionDestination = new Transaction(destinationUser.getId(), "RECEIVE", originUsername
-                , destinationUsername, amount, destinationUserBalanceBefore, destinationUserBalance, "SETTLED", localDate);
-        transactionRepo.save(transactionDestination);
+        // create transaction (destination user)
+        Transaction transactionDestination = new Transaction("RECEIVE", originUsername
+                , destinationUsername, amount, destinationUserBalanceBefore, destinationUserBalance
+                , "SETTLED", localDate, destinationUser);
 
-        return new TransactionTrfResponseDto(transactionOrigin.getTrxId(), originUsername, destinationUsername, amount, "SETTLED");
+        // save transactions
+        transactionRepo.saveAll(List.of(transactionOrigin, transactionDestination));
+
+        return new TransactionTrfResponseDto(transactionOrigin.getTrxId(), originUsername
+                , destinationUsername, amount, "SETTLED");
     }
 
-    public void executeTopup(String username, Integer amount){
+    public void executeTopup(String username, Integer amount) {
         // get user
         User user = userRepo.findByUsername(username);
         Integer userBalanceBefore = user.getBalance();
         Integer userBalanceAfter = userBalanceBefore + amount;
 
-        // update and save balance
+        // update user balance
         user.setBalance(userBalanceAfter);
-        userRepo.save(user);
+//        userRepo.save(user);
 
         // get current date
         LocalDate localDate = LocalDate.now();
 
-        // update transaction db
-        Transaction transaction = new Transaction(user.getId(), "TOPUP", null
-                , username, amount, userBalanceBefore, userBalanceAfter, "SETTLED", localDate);
+        // create transaction
+        Transaction transaction = new Transaction("TOPUP", null, username
+                , amount, userBalanceBefore, userBalanceAfter, "SETTLED", localDate, user);
+
+        // save transaction
         transactionRepo.save(transaction);
     }
 }

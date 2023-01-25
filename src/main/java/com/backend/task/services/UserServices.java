@@ -109,6 +109,9 @@ public class UserServices {
             userRepo.save(user);
             return false;
         }
+
+        // reset incorrect password count
+        user.setIncorrectPasswordCount(0);
         return true;
     }
 

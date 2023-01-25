@@ -30,7 +30,7 @@ public class ReportServices {
         // get all user id
         Set<Integer> userIds = new HashSet<>();
         for (var transaction : transactions) {
-            userIds.add(transaction.getUserId());
+            userIds.add(transaction.getUser().getId());
         }
 
         // get all transaction of each user
@@ -44,7 +44,7 @@ public class ReportServices {
 
             // add transaction of the user
             for (var transaction : transactions) {
-                if (transaction.getUserId() == userId){
+                if (transaction.getUser().getId() == userId){
                     userTransaction.add(transaction);
                 }
             }
