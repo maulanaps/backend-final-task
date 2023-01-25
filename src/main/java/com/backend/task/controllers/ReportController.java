@@ -19,10 +19,8 @@ public class ReportController {
     ReportServices reportServices;
 
     @GetMapping("/getreport/{date}")
-    ResponseEntity<Object> getreport(@PathVariable String date){
+    ResponseEntity<Object> getreport(@PathVariable LocalDate date){
 
-        LocalDate localDate = LocalDate.parse(date);
-
-        return new ResponseEntity<>(new ReportDto2(reportServices.getReports(localDate)), HttpStatus.OK);
+        return new ResponseEntity<>(new ReportDto2(reportServices.getReports(date)), HttpStatus.OK);
     }
 }
