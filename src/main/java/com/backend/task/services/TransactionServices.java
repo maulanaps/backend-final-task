@@ -6,7 +6,6 @@ import com.backend.task.models.Transaction;
 import com.backend.task.models.User;
 import com.backend.task.repo.TransactionRepo;
 import com.backend.task.repo.UserRepo;
-import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -54,22 +53,22 @@ public class TransactionServices {
 
     public TransactionTrfResponseDto executeTransfer(String originUsername, String destinationUsername, Integer amount) {
 
-        Integer amountAfterTax = Math.round(amount * (1 + Constants.TAX));
+        Integer tax = Math.round(amount * Constants.TAX);
 
         // origin user
         User originUser = userRepo.findByUsername(originUsername);
         Integer originUserBalanceBefore = originUser.getBalance();
-        Integer originUserBalance = originUserBalanceBefore - amountAfterTax;
+        Integer originUserBalanceMid = originUserBalanceBefore - amount;
+        Integer originUserBalanceAfter = originUserBalanceMid - tax;
 
         // destination user
         User destinationUser = userRepo.findByUsername(destinationUsername);
         Integer destinationUserBalanceBefore = destinationUser.getBalance();
-        ;
-        Integer destinationUserBalance = destinationUserBalanceBefore + amount;
+        Integer destinationUserBalanceAfter = destinationUserBalanceBefore + amount;
 
         // update balance of 2 user
-        destinationUser.setBalance(destinationUserBalance);
-        originUser.setBalance(originUserBalance);
+        destinationUser.setBalance(destinationUserBalanceAfter);
+        originUser.setBalance(originUserBalanceAfter);
 
         LocalDate localDate = LocalDate.now();
 
@@ -77,19 +76,23 @@ public class TransactionServices {
 //        userRepo.save(originUser);
 //        userRepo.save(destinationUser);
 
-
         // create transaction (origin user)
-        Transaction transactionOrigin = new Transaction("SEND", originUsername
-                , destinationUsername, amount, originUserBalanceBefore, originUserBalance
+        Transaction transactionOrigin = new Transaction("SEND", originUsername, amount * (-1)
+                , originUserBalanceBefore, originUserBalanceMid
+                , "SETTLED", localDate, originUser);
+
+        // create TAX transaction (origin user)
+        Transaction transactionOriginTax = new Transaction("TAX", originUsername, tax * (-1)
+                , originUserBalanceMid, originUserBalanceAfter
                 , "SETTLED", localDate, originUser);
 
         // create transaction (destination user)
-        Transaction transactionDestination = new Transaction("RECEIVE", originUsername
-                , destinationUsername, amount, destinationUserBalanceBefore, destinationUserBalance
+        Transaction transactionDestination = new Transaction("RECEIVE", destinationUsername
+                , amount, destinationUserBalanceBefore, destinationUserBalanceAfter
                 , "SETTLED", localDate, destinationUser);
 
         // save transactions
-        transactionRepo.saveAll(List.of(transactionOrigin, transactionDestination));
+        transactionRepo.saveAll(List.of(transactionOrigin, transactionOriginTax, transactionDestination));
 
         return new TransactionTrfResponseDto(transactionOrigin.getTrxId(), originUsername
                 , destinationUsername, amount, "SETTLED");
@@ -109,8 +112,8 @@ public class TransactionServices {
         LocalDate localDate = LocalDate.now();
 
         // create transaction
-        Transaction transaction = new Transaction("TOPUP", null, username
-                , amount, userBalanceBefore, userBalanceAfter, "SETTLED", localDate, user);
+        Transaction transaction = new Transaction("TOPUP", username, amount, userBalanceBefore
+                , userBalanceAfter, "SETTLED", localDate, user);
 
         // save transaction
         transactionRepo.save(transaction);

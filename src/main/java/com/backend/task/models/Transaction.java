@@ -20,19 +20,17 @@ public class Transaction {
     @JoinColumn(name = "user_id")
     private User user;
     String type;
-    String originUsername;
-    String destinationUsername;
+    String username;
     Integer amount;
     Integer balanceBefore;
     Integer balanceAfter;
     String status;
     LocalDate date;
 
-    public Transaction(String type, String originUsername, String destinationUsername
-            , Integer amount, Integer balanceBefore, Integer balanceAfter, String status, LocalDate date, User user) {
+    public Transaction(String type, String username, Integer amount, Integer balanceBefore
+            , Integer balanceAfter, String status, LocalDate date, User user) {
         this.type = type;
-        this.originUsername = originUsername;
-        this.destinationUsername = destinationUsername;
+        this.username = username;
         this.amount = amount;
         this.balanceBefore = balanceBefore;
         this.balanceAfter = balanceAfter;
