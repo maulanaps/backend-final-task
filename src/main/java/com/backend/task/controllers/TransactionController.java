@@ -71,7 +71,7 @@ public class TransactionController {
         TransactionTrfResponseDto transactionTrfResponseDto = transactionServices.executeTransfer(username, destinationUsername, amount);
 
         return new ResponseEntity<>(transactionTrfResponseDto, HttpStatus.OK);
-//
+
 //        400 - user not found
 //        400 - password invalid
 //        400 - user banned
@@ -84,7 +84,7 @@ public class TransactionController {
     }
 
     @PostMapping("topup")
-    ResponseEntity<Object> topup(@RequestBody TransactionTopupDto transactionTopupDto){
+    ResponseEntity<Object> topup(@RequestBody TransactionTopupDto transactionTopupDto) throws Exception{
         String username = transactionTopupDto.username();
         String password = transactionTopupDto.password();
         Integer amount = transactionTopupDto.amount();
@@ -101,12 +101,21 @@ public class TransactionController {
             return new ResponseEntity<>("400 - password invalid", HttpStatus.BAD_REQUEST);
         }
 
+        if (!transactionServices.amountIsValid(amount)){
+            return new ResponseEntity<>("400 - amount can't be zero or negative", HttpStatus.BAD_REQUEST);
+        }
+
         if (transactionServices.balanceIsOverflow(username, amount)){
             return new ResponseEntity<>("400 - max balance exceeded", HttpStatus.BAD_REQUEST);
         }
 
         if (!transactionServices.maxTopupOk(amount)){
             return new ResponseEntity<>("400 - max topup exceeded", HttpStatus.BAD_REQUEST);
+        }
+
+        if (!transactionServices.balanceMinimum(username, amount)){
+            return new ResponseEntity<>("400 - first topup minimum is " + Constants.MIN_BALANCE
+                    , HttpStatus.BAD_REQUEST);
         }
 
         transactionServices.executeTopup(username, amount);

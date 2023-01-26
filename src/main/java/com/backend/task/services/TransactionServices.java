@@ -118,4 +118,20 @@ public class TransactionServices {
         // save transaction
         transactionRepo.save(transaction);
     }
+
+    public boolean balanceMinimum(String username, Integer amount) throws Exception {
+        User user = userRepo.findByUsername(username);
+
+        Integer balanceAfter = user.getBalance() + amount;
+
+        return balanceAfter >= Constants.MIN_BALANCE;
+    }
+
+    public boolean amountIsValid(Integer amount){
+        if (amount == 0 || Math.signum(amount) == -1){
+            return false;
+        }
+
+        return true;
+    }
 }

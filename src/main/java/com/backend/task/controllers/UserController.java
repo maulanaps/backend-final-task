@@ -15,13 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     @Autowired
     UserServices userServices;
-    @Autowired
-    TransactionServices transactionServices;
 
     @PostMapping("/registration")
     ResponseEntity<String> Registration(@RequestBody UserRegisDto userRegisDto){
-        String username = userRegisDto.username();
-        String password = userRegisDto.password();
+        String username = userRegisDto.getUsername();
+        String password = userRegisDto.getPassword();
 
         // validate username
         if (!userServices.validateUsername(username)) {

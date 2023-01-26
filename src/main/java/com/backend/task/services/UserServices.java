@@ -24,10 +24,14 @@ public class UserServices {
     UserMapper userMapper;
 
     public void createUser(UserRegisDto userRegisDto) {
-        User user = new User(userRegisDto.username(), userRegisDto.password());
-        user.setBalance(Constants.MIN_BALANCE);
-        user.setTransactionLimit(Constants.MAX_TRANSACTION_NO_KTP);
+//        User user = new User(userRegisDto.username(), userRegisDto.password());
+//        user.setBalance(0);
+//        user.setTransactionLimit(Constants.MAX_TRANSACTION_NO_KTP);
+//        userRepo.save(user);
+
+        User user = userMapper.toUser(userRegisDto);
         userRepo.save(user);
+
     }
 
     public Boolean existByUsername(String username) {
@@ -70,17 +74,18 @@ public class UserServices {
     }
 
     public UserBalanceDto getUserBalance(String username) {
-        User userFound = userRepo.findByUsername(username);
+        User user = userRepo.findByUsername(username);
 
-        if (userFound == null) {
+        if (user == null) {
             // user not found
             return null;
         }
 
-        String balanceFormatted = rupiahFormat(userFound.getBalance());
-        String transactionLimitFormatted = rupiahFormat(userFound.getTransactionLimit());
+//        String balanceFormatted = rupiahFormat(user.getBalance());
+//        String transactionLimitFormatted = rupiahFormat(user.getTransactionLimit());
 
-        return new UserBalanceDto(balanceFormatted, transactionLimitFormatted);
+//        return new UserBalanceDto(balanceFormatted, transactionLimitFormatted);
+        return userMapper.toUserBalanceDto(user);
     }
 
     public void updateKtp(String username, String ktp){
