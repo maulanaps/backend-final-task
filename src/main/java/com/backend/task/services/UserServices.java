@@ -4,6 +4,7 @@ import com.backend.task.constant.Constants;
 import com.backend.task.dto.UserBalanceDto;
 import com.backend.task.dto.UserInfoDto;
 import com.backend.task.dto.UserRegisDto;
+import com.backend.task.mapper.UserMapper;
 import com.backend.task.models.User;
 import com.backend.task.repo.UserRepo;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +19,9 @@ import java.util.Optional;
 public class UserServices {
     @Autowired
     UserRepo userRepo;
+
+    @Autowired
+    UserMapper userMapper;
 
     public void createUser(UserRegisDto userRegisDto) {
         User user = new User(userRegisDto.username(), userRegisDto.password());
@@ -61,7 +65,8 @@ public class UserServices {
             return null;
         }
 
-        return new UserInfoDto(userFound.getUsername(), userFound.getKtp());
+//        return new UserInfoDto(userFound.getUsername(), userFound.getKtp());
+        return userMapper.toUserInfoDto(userFound);
     }
 
     public UserBalanceDto getUserBalance(String username) {
