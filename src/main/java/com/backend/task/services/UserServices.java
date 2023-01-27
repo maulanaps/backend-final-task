@@ -1,6 +1,5 @@
 package com.backend.task.services;
 
-import com.backend.task.audit.AbstractAuditingEntity;
 import com.backend.task.constant.Constants;
 import com.backend.task.dto.UserBalanceDto;
 import com.backend.task.dto.UserInfoDto;
@@ -15,7 +14,7 @@ import java.text.NumberFormat;
 import java.util.Locale;
 
 @Service
-public class UserServices extends AbstractAuditingEntity {
+public class UserServices {
     @Autowired
     UserRepo userRepo;
 
@@ -29,6 +28,8 @@ public class UserServices extends AbstractAuditingEntity {
 //        userRepo.save(user);
 
         User user = userMapper.toUser(userRegisDto);
+
+
         userRepo.save(user);
 
     }

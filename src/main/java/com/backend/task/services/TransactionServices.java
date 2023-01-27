@@ -1,6 +1,5 @@
 package com.backend.task.services;
 
-import com.backend.task.audit.AbstractAuditingEntity;
 import com.backend.task.constant.Constants;
 import com.backend.task.dto.TransactionTrfResponseDto;
 import com.backend.task.models.Transaction;
@@ -14,7 +13,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class TransactionServices extends AbstractAuditingEntity {
+public class TransactionServices {
 
     @Autowired
     TransactionRepo transactionRepo;

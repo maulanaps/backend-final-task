@@ -1,6 +1,5 @@
 package com.backend.task.services;
 
-import com.backend.task.audit.AbstractAuditingEntity;
 import com.backend.task.dto.ReportDto;
 import com.backend.task.models.Transaction;
 import com.backend.task.models.User;
@@ -14,7 +13,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
-public class ReportServices extends AbstractAuditingEntity{
+public class ReportServices {
     @Autowired
     TransactionRepo transactionRepo;
     @Autowired
