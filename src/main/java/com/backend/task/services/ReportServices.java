@@ -1,5 +1,6 @@
 package com.backend.task.services;
 
+import com.backend.task.audit.AbstractAuditingEntity;
 import com.backend.task.dto.ReportDto;
 import com.backend.task.models.Transaction;
 import com.backend.task.models.User;
@@ -13,7 +14,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Service
-public class ReportServices {
+public class ReportServices extends AbstractAuditingEntity{
     @Autowired
     TransactionRepo transactionRepo;
     @Autowired
@@ -59,11 +60,21 @@ public class ReportServices {
             User user = userRepo.getById(userId);
             String username = user.getUsername();
 
-            Float changeInPercentage = ((latestBalance - oldestBalance) / oldestBalance.floatValue()) * 100;
+            // calculation
+            Integer numerator = latestBalance - oldestBalance;
+            Float denominator = oldestBalance.floatValue();
+            Float temp = numerator / denominator * 100;
+            String changeInPercentage;
             String balanceChangeDate = localDate.format(DateTimeFormatter.ofPattern("dd MMM yyyy"));
 
+            if (denominator <= 0){
+                changeInPercentage = "-";
+            } else {
+                changeInPercentage = temp + "%";
+            }
+
             // add into reportDto list
-            reports.add(new ReportDto(username, changeInPercentage.toString() + "%", balanceChangeDate));
+            reports.add(new ReportDto(username, changeInPercentage, balanceChangeDate));
         }
 
         return reports;

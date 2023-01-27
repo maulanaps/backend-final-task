@@ -4,6 +4,7 @@ import com.backend.task.constant.Constants;
 import com.backend.task.dto.TransactionTopupDto;
 import com.backend.task.dto.TransactionTrfDto;
 import com.backend.task.dto.TransactionTrfResponseDto;
+import com.backend.task.response.ResponseHandler;
 import com.backend.task.services.TransactionServices;
 import com.backend.task.services.UserServices;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,55 +33,45 @@ public class TransactionController {
         Integer amount = transactionTrfDto.amount();
 
         if (!userServices.existByUsername(username)){
-            return new ResponseEntity<>("400 - user not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
         if (userServices.isBanned(username)){
-            return new ResponseEntity<>("400 - user is banned", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user is banned");
         }
 
         if (userServices.isBanned(destinationUsername)){
-            return new ResponseEntity<>("400 - destination user is banned", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "destination user is banned");
         }
 
         if (!userServices.validatePassword(username, password)){
-            return new ResponseEntity<>("400 - password invalid", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "password invalid");
         }
 
         if (!transactionServices.transactionLimitOk(username, amount)){
-            return new ResponseEntity<>("400 - transaction limit exceeded", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "transaction limit exceeded");
         }
 
         if (!transactionServices.minTrfAmountOk(amount)){
-            return new ResponseEntity<>("400 - minimum trx amount is "
-                    + UserServices.rupiahFormat(Constants.MIN_TRANSACTION),HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "minimum trx amount is "
+                    + UserServices.rupiahFormat(Constants.MIN_TRANSACTION));
         }
 
         if (!transactionServices.balanceIsSufficient(username, amount)){
-            return new ResponseEntity<>("400 - not enough balance", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "not enough balance");
         }
 
         if (!userServices.existByUsername(destinationUsername)){
-            return new ResponseEntity<>("400 - destination username not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "destination username not found");
         }
 
         if (transactionServices.balanceIsOverflow(destinationUsername, amount)){
-            return new ResponseEntity<>("400 - destination user balance is overflow", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "destination user balance is overflow");
         }
 
         TransactionTrfResponseDto transactionTrfResponseDto = transactionServices.executeTransfer(username, destinationUsername, amount);
 
         return new ResponseEntity<>(transactionTrfResponseDto, HttpStatus.OK);
-
-//        400 - user not found
-//        400 - password invalid
-//        400 - user banned
-//        400 - not enough balance
-//        400 - transaction limit exceeded
-//        400 - minimum trx amount is xxxxxxxx
-//        execute trf
-
-//        400 - format invalid
     }
 
     @PostMapping("topup")
@@ -90,36 +81,35 @@ public class TransactionController {
         Integer amount = transactionTopupDto.amount();
 
         if (!userServices.existByUsername(username)){
-            return new ResponseEntity<>("400 - user not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
         if (userServices.isBanned(username)){
-            return new ResponseEntity<>("400 - user is banned", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user is banned");
         }
 
         if (!userServices.validatePassword(username, password)){
-            return new ResponseEntity<>("400 - password invalid", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "password invalid");
         }
 
         if (!transactionServices.amountIsValid(amount)){
-            return new ResponseEntity<>("400 - amount can't be zero or negative", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "amount can't be zero or negative");
         }
 
         if (transactionServices.balanceIsOverflow(username, amount)){
-            return new ResponseEntity<>("400 - max balance exceeded", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "max balance exceeded");
         }
 
         if (!transactionServices.maxTopupOk(amount)){
-            return new ResponseEntity<>("400 - max topup exceeded", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "max topup exceeded");
         }
 
         if (!transactionServices.balanceMinimum(username, amount)){
-            return new ResponseEntity<>("400 - first topup minimum is " + Constants.MIN_BALANCE
-                    , HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "first topup minimum is " + Constants.MIN_BALANCE);
         }
 
         transactionServices.executeTopup(username, amount);
 
-        return new ResponseEntity<>("200 - OK", HttpStatus.OK);
+        return ResponseHandler.createResponse(HttpStatus.OK, "OK");
     }
 }

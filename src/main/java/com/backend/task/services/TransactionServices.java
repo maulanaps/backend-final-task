@@ -1,5 +1,6 @@
 package com.backend.task.services;
 
+import com.backend.task.audit.AbstractAuditingEntity;
 import com.backend.task.constant.Constants;
 import com.backend.task.dto.TransactionTrfResponseDto;
 import com.backend.task.models.Transaction;
@@ -13,7 +14,7 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Service
-public class TransactionServices {
+public class TransactionServices extends AbstractAuditingEntity {
 
     @Autowired
     TransactionRepo transactionRepo;
@@ -53,28 +54,24 @@ public class TransactionServices {
 
     public TransactionTrfResponseDto executeTransfer(String originUsername, String destinationUsername, Integer amount) {
 
-        Integer tax = Math.round(amount * Constants.TAX);
+        int tax = Math.round(amount * Constants.TAX);
 
         // origin user
         User originUser = userRepo.findByUsername(originUsername);
-        Integer originUserBalanceBefore = originUser.getBalance();
-        Integer originUserBalanceMid = originUserBalanceBefore - amount;
-        Integer originUserBalanceAfter = originUserBalanceMid - tax;
+        int originUserBalanceBefore = originUser.getBalance();
+        int originUserBalanceMid = originUserBalanceBefore - amount;
+        int originUserBalanceAfter = originUserBalanceMid - tax;
 
         // destination user
         User destinationUser = userRepo.findByUsername(destinationUsername);
-        Integer destinationUserBalanceBefore = destinationUser.getBalance();
-        Integer destinationUserBalanceAfter = destinationUserBalanceBefore + amount;
+        int destinationUserBalanceBefore = destinationUser.getBalance();
+        int destinationUserBalanceAfter = destinationUserBalanceBefore + amount;
 
         // update balance of 2 user
         destinationUser.setBalance(destinationUserBalanceAfter);
         originUser.setBalance(originUserBalanceAfter);
 
         LocalDate localDate = LocalDate.now();
-
-        // save 2 users updated balances
-//        userRepo.save(originUser);
-//        userRepo.save(destinationUser);
 
         // create transaction (origin user)
         Transaction transactionOrigin = new Transaction("SEND", originUsername, amount * (-1)
@@ -106,7 +103,6 @@ public class TransactionServices {
 
         // update user balance
         user.setBalance(userBalanceAfter);
-//        userRepo.save(user);
 
         // get current date
         LocalDate localDate = LocalDate.now();
@@ -119,10 +115,10 @@ public class TransactionServices {
         transactionRepo.save(transaction);
     }
 
-    public boolean balanceMinimum(String username, Integer amount) throws Exception {
+    public boolean balanceMinimum(String username, Integer amount) {
         User user = userRepo.findByUsername(username);
 
-        Integer balanceAfter = user.getBalance() + amount;
+        int balanceAfter = user.getBalance() + amount;
 
         return balanceAfter >= Constants.MIN_BALANCE;
     }
@@ -131,7 +127,6 @@ public class TransactionServices {
         if (amount == 0 || Math.signum(amount) == -1){
             return false;
         }
-
         return true;
     }
 }

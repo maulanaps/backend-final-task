@@ -1,5 +1,6 @@
 package com.backend.task.services;
 
+import com.backend.task.audit.AbstractAuditingEntity;
 import com.backend.task.constant.Constants;
 import com.backend.task.dto.UserBalanceDto;
 import com.backend.task.dto.UserInfoDto;
@@ -11,12 +12,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.text.NumberFormat;
-import java.util.Currency;
 import java.util.Locale;
-import java.util.Optional;
 
 @Service
-public class UserServices {
+public class UserServices extends AbstractAuditingEntity {
     @Autowired
     UserRepo userRepo;
 

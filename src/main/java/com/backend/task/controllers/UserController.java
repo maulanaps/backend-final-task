@@ -1,14 +1,13 @@
 package com.backend.task.controllers;
 
 import com.backend.task.dto.*;
+import com.backend.task.response.ResponseHandler;
 import com.backend.task.services.TransactionServices;
 import com.backend.task.services.UserServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-
 
 @RestController
 @RequestMapping("/user")
@@ -17,32 +16,31 @@ public class UserController {
     UserServices userServices;
 
     @PostMapping("/registration")
-    ResponseEntity<String> Registration(@RequestBody UserRegisDto userRegisDto){
+    ResponseEntity<Object> Registration(@RequestBody UserRegisDto userRegisDto){
         String username = userRegisDto.getUsername();
         String password = userRegisDto.getPassword();
 
         // validate username
         if (!userServices.validateUsername(username)) {
-            return new ResponseEntity<>("400 - username taken", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "username taken");
         }
 
         // validate password
         if (!userServices.validateNewCreatedPassword(password)) {
-            return new ResponseEntity<>("400 - password format invalid \n"
-                    + "(Min 10 chars, min 1 number, min 1 letter, min 1 special character.)"
-                    , HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "password format" +
+                    " invalid \n" + "(Min 10 chars, min 1 number, min 1 letter, min 1 special character.)");
         }
 
         // create new user
         userServices.createUser(userRegisDto);
 
-        return new ResponseEntity<>("200 - OK", HttpStatus.OK);
+        return ResponseHandler.createResponse(HttpStatus.OK, "OK");
     }
 
     @GetMapping("/{username}/getinfo")
     public ResponseEntity<Object> getInfo(@PathVariable String username) {
         if (!userServices.existByUsername(username)) {
-            return new ResponseEntity<>("400 - user not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
         UserInfoDto userInfoDto = userServices.getUserInfo(username);
@@ -54,7 +52,7 @@ public class UserController {
     public ResponseEntity<Object> getBalance(@PathVariable String username) {
 
         if (!userServices.existByUsername(username)) {
-            return new ResponseEntity<>("400 - user not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
         UserBalanceDto userBalanceDto = userServices.getUserBalance(username);
@@ -63,41 +61,42 @@ public class UserController {
     }
 
     @PutMapping("/{username}/unban")
-    public ResponseEntity<String> unban(@PathVariable String username) {
+    public ResponseEntity<Object> unban(@PathVariable String username) {
 
         if (!userServices.existByUsername(username)) {
-            return new ResponseEntity<>("400 - user not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
         userServices.unban(username);
 
-        return new ResponseEntity<>("200 - OK", HttpStatus.OK);
+        return ResponseHandler.createResponse(HttpStatus.OK, "OK");
     }
 
     @PutMapping("/{username}/addktp")
-    public ResponseEntity<String> addKtp(@PathVariable String username, @RequestBody UserAddKtp userAddKtp) {
+    public ResponseEntity<Object> addKtp(@PathVariable String username, @RequestBody UserAddKtp userAddKtp) {
 
         String ktp = userAddKtp.ktp();
 
         if (!userServices.existByUsername(username)) {
-            return new ResponseEntity<>("400 - user not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
         if (userServices.existByKtp(ktp)) {
-            return new ResponseEntity<>("400 - ktp has been used by other user", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST
+                    , "ktp has been used by other user");
         }
 
         if (!userServices.validateKtp(ktp)) {
-            return new ResponseEntity<>("400 - incorrect ktp format", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "incorrect ktp format");
         }
 
         userServices.updateKtp(username, ktp);
 
-        return new ResponseEntity<>("200 - OK", HttpStatus.OK);
+        return ResponseHandler.createResponse(HttpStatus.OK, "OK");
     }
 
     @PostMapping("/changepassword")
-    public ResponseEntity<String> changePassword(@RequestBody UserChangePassDto userChangePassDto) {
+    public ResponseEntity<Object> changePassword(@RequestBody UserChangePassDto userChangePassDto) {
 
         String username = userChangePassDto.username();
         String password = userChangePassDto.password();
@@ -105,25 +104,24 @@ public class UserController {
 
 
         if (!userServices.existByUsername(username)){
-            return new ResponseEntity<>("400 - user not found", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
         if (userServices.isBanned(username)){
-            return new ResponseEntity<>("400 - user is banned", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user is banned");
         }
 
         if (!userServices.validatePassword(username, oldPassword)){
-            return new ResponseEntity<>("400 - old password doesn't match", HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "old password doesn't match");
         }
 
         if (!userServices.validateNewCreatedPassword(password)){
-            return new ResponseEntity<>("400 - format invalid \n" +
-                    "(Min 10 chars, min 1 number, min 1 letter, min 1 special character.)"
-                    , HttpStatus.BAD_REQUEST);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "format invalid \n" +
+                    "(Min 10 chars, min 1 number, min 1 letter, min 1 special character.)");
         }
 
         userServices.changePassword(username, password);
 
-        return new ResponseEntity<>("200 - OK", HttpStatus.OK);
+        return ResponseHandler.createResponse(HttpStatus.OK, "OK");
     }
 }
