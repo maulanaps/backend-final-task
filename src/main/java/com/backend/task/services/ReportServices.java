@@ -72,7 +72,7 @@ public class ReportServices {
         // get all user's username
         List<String> usersUsername = userRepo.findAllUsername();
 
-        // get all trx on certain dat
+        // get all trx on certain date
         List<Transaction> transactions = transactionRepo.findAllByDate(localDate);
 
         // formatted date
@@ -90,7 +90,7 @@ public class ReportServices {
         var report = new ArrayList<ReportDto>();
         map.forEach((username, transactionList) -> {
 
-            String changeInPercentage = "";
+            String changeInPercentage;
 
             // if the user didn't do any trx on that date
             if (transactionList.size() == 0) {

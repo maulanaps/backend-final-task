@@ -1,6 +1,7 @@
 package com.backend.task.services;
 
 import com.backend.task.constant.Constants;
+import com.backend.task.dto.TransactionTrfDto;
 import com.backend.task.dto.TransactionTrfResponseDto;
 import com.backend.task.models.Transaction;
 import com.backend.task.models.User;
@@ -73,25 +74,18 @@ public class TransactionServices {
         LocalDate localDate = LocalDate.now();
 
         // create transaction (origin user)
-        Transaction transactionOrigin = new Transaction("SEND", originUsername, amount * (-1)
-                , originUserBalanceBefore, originUserBalanceMid
-                , "SETTLED", localDate, originUser);
+        Transaction transactionOrigin = new Transaction("SEND", originUsername, amount * (-1), originUserBalanceBefore, originUserBalanceMid, "SETTLED", localDate, originUser);
 
         // create TAX transaction (origin user)
-        Transaction transactionOriginTax = new Transaction("TAX", originUsername, tax * (-1)
-                , originUserBalanceMid, originUserBalanceAfter
-                , "SETTLED", localDate, originUser);
+        Transaction transactionOriginTax = new Transaction("TAX", originUsername, tax * (-1), originUserBalanceMid, originUserBalanceAfter, "SETTLED", localDate, originUser);
 
         // create transaction (destination user)
-        Transaction transactionDestination = new Transaction("RECEIVE", destinationUsername
-                , amount, destinationUserBalanceBefore, destinationUserBalanceAfter
-                , "SETTLED", localDate, destinationUser);
+        Transaction transactionDestination = new Transaction("RECEIVE", destinationUsername, amount, destinationUserBalanceBefore, destinationUserBalanceAfter, "SETTLED", localDate, destinationUser);
 
         // save transactions
         transactionRepo.saveAll(List.of(transactionOrigin, transactionOriginTax, transactionDestination));
 
-        return new TransactionTrfResponseDto(transactionOrigin.getTrxId(), originUsername
-                , destinationUsername, amount, "SETTLED");
+        return new TransactionTrfResponseDto(transactionOrigin.getTrxId(), originUsername, destinationUsername, amount, "SETTLED");
     }
 
     public void executeTopup(String username, Integer amount) {
@@ -107,8 +101,7 @@ public class TransactionServices {
         LocalDate localDate = LocalDate.now();
 
         // create transaction
-        Transaction transaction = new Transaction("TOPUP", username, amount, userBalanceBefore
-                , userBalanceAfter, "SETTLED", localDate, user);
+        Transaction transaction = new Transaction("TOPUP", username, amount, userBalanceBefore, userBalanceAfter, "SETTLED", localDate, user);
 
         // save transaction
         transactionRepo.save(transaction);
@@ -122,8 +115,15 @@ public class TransactionServices {
         return balanceAfter >= Constants.MIN_BALANCE;
     }
 
-    public boolean amountIsValid(Integer amount){
-        if (amount == 0 || Math.signum(amount) == -1){
+    public boolean amountIsValid(Integer amount) {
+        if (amount == 0 || Math.signum(amount) == -1) {
+            return false;
+        }
+        return true;
+    }
+
+    public boolean validateTrfDto(TransactionTrfDto transactionTrfDto) {
+        if (transactionTrfDto.amount() == null || transactionTrfDto.username() == null || transactionTrfDto.destinationUsername() == null || transactionTrfDto.password() == null) {
             return false;
         }
         return true;

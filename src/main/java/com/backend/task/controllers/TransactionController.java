@@ -7,6 +7,7 @@ import com.backend.task.dto.TransactionTrfResponseDto;
 import com.backend.task.response.ResponseHandler;
 import com.backend.task.services.TransactionServices;
 import com.backend.task.services.UserServices;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -25,7 +26,7 @@ public class TransactionController {
     @Autowired
     UserServices userServices;
     @PostMapping("/create")
-    ResponseEntity<Object> transactionCreate(@RequestBody TransactionTrfDto transactionTrfDto){
+    ResponseEntity<Object> transactionCreate(@Valid @RequestBody TransactionTrfDto transactionTrfDto){
 
         String username = transactionTrfDto.username();
         String password = transactionTrfDto.password();
@@ -105,7 +106,7 @@ public class TransactionController {
         }
 
         if (!transactionServices.balanceMinimum(username, amount)){
-            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "first topup minimum is " + Constants.MIN_BALANCE);
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "minimum balance is " + Constants.MIN_BALANCE);
         }
 
         transactionServices.executeTopup(username, amount);
