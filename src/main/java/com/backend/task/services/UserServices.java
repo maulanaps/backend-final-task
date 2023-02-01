@@ -122,6 +122,7 @@ public class UserServices {
 
         // reset incorrect password count
         user.setIncorrectPasswordCount(0);
+        userRepo.save(user);
         return true;
     }
 
@@ -146,5 +147,9 @@ public class UserServices {
 
         // Format the Number into a Currency String
         return rupiahFormat.format(input);
+    }
+
+    public boolean destinationUserIdValid(String username, String destinationUsername) {
+        return !username.equals(destinationUsername);
     }
 }

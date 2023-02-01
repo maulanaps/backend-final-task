@@ -4,6 +4,7 @@ import com.backend.task.dto.*;
 import com.backend.task.response.ResponseHandler;
 import com.backend.task.services.TransactionServices;
 import com.backend.task.services.UserServices;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +29,7 @@ public class UserController {
         // validate password
         if (!userServices.validateNewCreatedPassword(password)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "password format" +
-                    " invalid \n" + "(Min 10 chars, min 1 number, min 1 letter, min 1 special character.)");
+                    " invalid (Min 10 chars, min 1 number, min 1 letter, min 1 special character.)");
         }
 
         // create new user
@@ -96,7 +97,7 @@ public class UserController {
     }
 
     @PostMapping("/changepassword")
-    public ResponseEntity<Object> changePassword(@RequestBody UserChangePassDto userChangePassDto) {
+    public ResponseEntity<Object> changePassword(@Valid @RequestBody UserChangePassDto userChangePassDto) {
 
         String username = userChangePassDto.username();
         String password = userChangePassDto.password();
@@ -116,7 +117,7 @@ public class UserController {
         }
 
         if (!userServices.validateNewCreatedPassword(password)){
-            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "format invalid \n" +
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "format invalid " +
                     "(Min 10 chars, min 1 number, min 1 letter, min 1 special character.)");
         }
 

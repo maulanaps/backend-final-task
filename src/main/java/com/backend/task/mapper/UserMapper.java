@@ -11,8 +11,8 @@ import org.mapstruct.Mapping;
 public interface UserMapper {
     UserInfoDto toUserInfoDto(User user);
 
-    @Mapping(target = "balance", source = "balance", numberFormat = "Rp###,###")
-    @Mapping(target = "transactionLimit", source = "transactionLimit", numberFormat = "Rp###,###")
+    @Mapping(target = "balance", source = "balance", numberFormat = "###,###")
+    @Mapping(target = "transactionLimit", source = "transactionLimit", numberFormat = "###,###")
     UserBalanceDto toUserBalanceDto(User user);
 
     User toUser(UserRegisDto userRegisDto);

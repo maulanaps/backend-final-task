@@ -25,48 +25,54 @@ public class TransactionController {
 
     @Autowired
     UserServices userServices;
+
     @PostMapping("/create")
-    ResponseEntity<Object> transactionCreate(@Valid @RequestBody TransactionTrfDto transactionTrfDto){
+    ResponseEntity<Object> transactionCreate(@Valid @RequestBody TransactionTrfDto transactionTrfDto) {
 
         String username = transactionTrfDto.username();
         String password = transactionTrfDto.password();
         String destinationUsername = transactionTrfDto.destinationUsername();
         Integer amount = transactionTrfDto.amount();
 
-        if (!userServices.existByUsername(username)){
+        if (!userServices.existByUsername(username)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
-        if (userServices.isBanned(username)){
+        if (userServices.isBanned(username)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user is banned");
         }
 
-        if (userServices.isBanned(destinationUsername)){
+        if (userServices.isBanned(destinationUsername)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "destination user is banned");
         }
 
-        if (!userServices.validatePassword(username, password)){
+        if (!userServices.validatePassword(username, password)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "password invalid");
         }
 
-        if (!transactionServices.transactionLimitOk(username, amount)){
+        if (!transactionServices.transactionLimitOk(username, amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "transaction limit exceeded");
         }
 
-        if (!transactionServices.minTrfAmountOk(amount)){
+        if (!transactionServices.minTrfAmountOk(amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "minimum trx amount is "
                     + UserServices.rupiahFormat(Constants.MIN_TRANSACTION));
         }
 
-        if (!transactionServices.balanceIsSufficient(username, amount)){
+        if (!transactionServices.balanceIsSufficient(username, amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "not enough balance");
         }
 
-        if (!userServices.existByUsername(destinationUsername)){
+        if (!userServices.existByUsername(destinationUsername)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "destination username not found");
         }
 
-        if (transactionServices.balanceIsOverflow(destinationUsername, amount)){
+        if (!userServices.destinationUserIdValid(username, destinationUsername)) {
+            return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST
+                    , "destination username can not be the same with sender username");
+        }
+
+        if (transactionServices.balanceIsOverflow(destinationUsername, amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "destination user balance is overflow");
         }
 
@@ -76,36 +82,36 @@ public class TransactionController {
     }
 
     @PostMapping("topup")
-    ResponseEntity<Object> topup(@RequestBody TransactionTopupDto transactionTopupDto) throws Exception{
+    ResponseEntity<Object> topup(@RequestBody TransactionTopupDto transactionTopupDto) {
         String username = transactionTopupDto.username();
         String password = transactionTopupDto.password();
         Integer amount = transactionTopupDto.amount();
 
-        if (!userServices.existByUsername(username)){
+        if (!userServices.existByUsername(username)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user not found");
         }
 
-        if (userServices.isBanned(username)){
+        if (userServices.isBanned(username)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "user is banned");
         }
 
-        if (!userServices.validatePassword(username, password)){
+        if (!userServices.validatePassword(username, password)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "password invalid");
         }
 
-        if (!transactionServices.amountIsValid(amount)){
+        if (!transactionServices.amountIsValid(amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "amount can't be zero or negative");
         }
 
-        if (transactionServices.balanceIsOverflow(username, amount)){
+        if (transactionServices.balanceIsOverflow(username, amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "max balance exceeded");
         }
 
-        if (!transactionServices.maxTopupOk(amount)){
+        if (!transactionServices.maxTopupOk(amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "max topup exceeded");
         }
 
-        if (!transactionServices.balanceMinimum(username, amount)){
+        if (!transactionServices.balanceMinimum(username, amount)) {
             return ResponseHandler.createResponse(HttpStatus.BAD_REQUEST, "minimum balance is " + Constants.MIN_BALANCE);
         }
 
