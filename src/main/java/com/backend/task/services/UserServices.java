@@ -22,13 +22,8 @@ public class UserServices {
     UserMapper userMapper;
 
     public void createUser(UserRegisDto userRegisDto) {
-//        User user = new User(userRegisDto.username(), userRegisDto.password());
-//        user.setBalance(0);
-//        user.setTransactionLimit(Constants.MAX_TRANSACTION_NO_KTP);
-//        userRepo.save(user);
 
         User user = userMapper.toUser(userRegisDto);
-
 
         userRepo.save(user);
 

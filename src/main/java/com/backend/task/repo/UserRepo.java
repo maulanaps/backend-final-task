@@ -9,7 +9,4 @@ import java.util.List;
 public interface UserRepo extends CrudRepository<User, Integer> {
     User findByUsername(String username);
     User findByKtp(String ktp);
-    User getById(Integer id);
-    @Query("SELECT username FROM User")
-    List<String> findAllUsername();
 }
